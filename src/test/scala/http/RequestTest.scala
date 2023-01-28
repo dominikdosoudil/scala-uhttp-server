@@ -6,7 +6,7 @@ class RequestTest extends AnyFlatSpec {
 
   it should "parse basic url" in {
     assert(
-      RequestParser.parse(RequestParser.url, "http://localhost").get == URL(
+      RequestParser.parse(RequestParser.uri, "http://localhost").get == URI(
         Protocol.Http,
         "localhost",
         80,
@@ -17,8 +17,8 @@ class RequestTest extends AnyFlatSpec {
   it should "parse basic url with path" in {
     assert(
       RequestParser
-        .parse(RequestParser.url, "http://localhost/hello/world/")
-        .get == URL(
+        .parse(RequestParser.uri, "http://localhost/hello/world/")
+        .get == URI(
         Protocol.Http,
         "localhost",
         80,
@@ -30,8 +30,8 @@ class RequestTest extends AnyFlatSpec {
   it should "parse basic url with port" in {
     assert(
       RequestParser
-        .parse(RequestParser.url, "http://localhost:8080")
-        .get == URL(
+        .parse(RequestParser.uri, "http://localhost:8080")
+        .get == URI(
         Protocol.Http,
         "localhost",
         8080,
@@ -43,8 +43,8 @@ class RequestTest extends AnyFlatSpec {
   it should "parse complex url with port and path" in {
     assert(
       RequestParser
-        .parse(RequestParser.url, "http://foo.example.ex--com:8080/hello/world")
-        .get == URL(
+        .parse(RequestParser.uri, "http://foo.example.ex--com:8080/hello/world")
+        .get == URI(
         Protocol.Http,
         "foo.example.ex--com",
         8080,
@@ -65,7 +65,7 @@ class RequestTest extends AnyFlatSpec {
           Request(
             Header(
               Method.Post,
-              URL(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              URI(Protocol.Http, "localhost", 8080, "/foo/bar"),
               Map(
                 "accept" -> "text/plain",
                 "user-agent" -> "PostmanRuntime/7.29.2"
@@ -88,7 +88,7 @@ class RequestTest extends AnyFlatSpec {
           Request(
             Header(
               Method.Get,
-              URL(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              URI(Protocol.Http, "localhost", 8080, "/foo/bar"),
               Map(
                 "accept" -> "text/plain",
                 "user-agent" -> "PostmanRuntime/7.29.2"

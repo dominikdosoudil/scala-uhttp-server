@@ -13,9 +13,9 @@ type Host = String
 type Port = Int
 type RequestHeaders = Map[String, String]
 
-case class URL(protocol: Protocol, host: Host, port: Port, path: Path)
+case class URI(protocol: Protocol, host: Host, port: Port, path: Path)
 
-case class Header(method: Method, url: URL, headers: RequestHeaders)
+case class Header(method: Method, url: URI, headers: RequestHeaders)
 
 object RequestParser extends RegexParsers {
   override protected def handleWhiteSpace(
@@ -55,9 +55,9 @@ object RequestParser extends RegexParsers {
       case _      => None
     }
 
-  lazy val url: Parser[URL] =
+  lazy val uri: Parser[URI] =
     protocol ~ ("://" ~> host) ~ optionalPort ~ path ^^ { parsed =>
-      URL(
+      URI(
         parsed._1._1._1,
         parsed._1._1._2,
         parsed._1._2.getOrElse(80),
@@ -88,7 +88,7 @@ object RequestParser extends RegexParsers {
     }
 
   lazy val header: Parser[Header] =
-    method ~ url ~ requestHeaders ^^ { case method ~ url ~ rqHs =>
+    method ~ uri ~ requestHeaders ^^ { case method ~ url ~ rqHs =>
       Header(method, url, rqHs)
     }
 
