@@ -94,12 +94,13 @@ object RequestParser extends RegexParsers {
 
   lazy val bodySep: Parser[String] = """[^\S\r\n]*\n{2,}""".r
 
-  lazy val request: Parser[Request] = header ~ (bodySep ~> """.*""".r) ^^ { r =>
-    Request(r._1, r._2)
+  lazy val request: Parser[Request] = header ~ opt(bodySep ~> """.*""".r) ^^ {
+    r =>
+      Request(r._1, r._2)
   }
 }
 
-case class Request(val header: Header, body: String)
+case class Request(val header: Header, body: Option[String])
 
 object Main extends App {
   println(
@@ -108,17 +109,4 @@ object Main extends App {
       "   POST http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\" \n\nbody body".stripMargin
     )
   )
-
-//  println(RequestParser.parseAll(RequestParser.arr, "[a b c d e fA]"))
-//
-//  println(
-//    RequestParser.parseAll(
-//      RequestParser.requestHeaders,
-//      """Accept: "text/plain" User-Agent: "PostmanRuntime/7.29.2"
-//        |Foo: "bar"
-//        |
-//        |abc cde
-//        |""".stripMargin
-//    )
-//  )
 }

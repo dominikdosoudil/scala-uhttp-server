@@ -52,4 +52,50 @@ class RequestTest extends AnyFlatSpec {
       )
     )
   }
+
+  it should "parse whole request" in {
+    assert(
+      RequestParser
+        .parseAll(
+          RequestParser.request,
+          "   POST http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\" \n\nbody body".stripMargin
+        )
+        .get
+        ==
+          Request(
+            Header(
+              Method.Post,
+              URL(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              Map(
+                "accept" -> "text/plain",
+                "user-agent" -> "PostmanRuntime/7.29.2"
+              )
+            ),
+            Some("body body")
+          )
+    )
+  }
+
+  it should "parse request without body" in {
+    assert(
+      RequestParser
+        .parseAll(
+          RequestParser.request,
+          "   GET http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\"".stripMargin
+        )
+        .get
+        ==
+          Request(
+            Header(
+              Method.Get,
+              URL(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              Map(
+                "accept" -> "text/plain",
+                "user-agent" -> "PostmanRuntime/7.29.2"
+              )
+            ),
+            None
+          )
+    )
+  }
 }
