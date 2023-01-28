@@ -58,7 +58,7 @@ class RequestTest extends AnyFlatSpec {
       RequestParser
         .parseAll(
           RequestParser.request,
-          "   POST http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\" \n\nbody body".stripMargin
+          "   POST http://localhost:8080/foo/bar HTTP/1.1\nAccept: text/plain\nUser-Agent: PostmanRuntime/7.29.2\n\nbody body".stripMargin
         )
         .get
         ==
@@ -66,6 +66,7 @@ class RequestTest extends AnyFlatSpec {
             Header(
               Method.Post,
               URI(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              Version.Http1_1,
               Map(
                 "accept" -> "text/plain",
                 "user-agent" -> "PostmanRuntime/7.29.2"
@@ -81,7 +82,7 @@ class RequestTest extends AnyFlatSpec {
       RequestParser
         .parseAll(
           RequestParser.request,
-          "   GET http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\"".stripMargin
+          "   GET http://localhost:8080/foo/bar HTTP/1.1\nAccept: text/plain\nUser-Agent: PostmanRuntime/7.29.2".stripMargin
         )
         .get
         ==
@@ -89,6 +90,7 @@ class RequestTest extends AnyFlatSpec {
             Header(
               Method.Get,
               URI(Protocol.Http, "localhost", 8080, "/foo/bar"),
+              Version.Http1_1,
               Map(
                 "accept" -> "text/plain",
                 "user-agent" -> "PostmanRuntime/7.29.2"
@@ -96,6 +98,49 @@ class RequestTest extends AnyFlatSpec {
             ),
             None
           )
+    )
+  }
+
+  it should "parse a lot of body" in {
+    assert(
+      RequestParser
+        .parseAll(
+          RequestParser.request,
+          """POST /foo/bar HTTP/1.1
+          |Accept: text/plain
+          |User-Agent: PostmanRuntime/7.29.2
+          |
+          |
+          |
+          |body body
+          |ssd
+          |f
+          |sdfjhsdkjf 
+          |
+          |
+          |sdfjhs dfkujh
+          |""".stripMargin
+        )
+        .get
+        == Request(
+          Header(
+            Method.Post,
+            "/foo/bar",
+            Version.Http1_1,
+            Map(
+              "accept" -> "text/plain",
+              "user-agent" -> "PostmanRuntime/7.29.2"
+            )
+          ),
+          Some("""body body
+                 |ssd
+                 |f
+                 |sdfjhsdkjf 
+                 |
+                 |
+                 |sdfjhs dfkujh
+                 |""".stripMargin)
+        )
     )
   }
 }

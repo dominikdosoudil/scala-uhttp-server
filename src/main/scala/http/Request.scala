@@ -5,6 +5,9 @@ import scala.util.parsing.combinator.*
 enum Method:
   case Get, Post, Put, Patch, Delete, Options, Head
 
+enum Version:
+  case Http1_1
+
 enum Protocol:
   case Http
 
@@ -15,7 +18,12 @@ type RequestHeaders = Map[String, String]
 
 case class URI(protocol: Protocol, host: Host, port: Port, path: Path)
 
-case class Header(method: Method, url: URI, headers: RequestHeaders)
+case class Header(
+    method: Method,
+    url: URI | Path,
+    version: Version,
+    headers: RequestHeaders
+)
 
 object RequestParser extends RegexParsers {
   override protected def handleWhiteSpace(
@@ -24,7 +32,7 @@ object RequestParser extends RegexParsers {
   ): Int = {
     val subSequence = source.subSequence(offset, source.length())
 
-    if ("""[^\S\r\n]*\n{2,}.*""".r.matches(subSequence)) {
+    if ("""[^\S\r\n]*\n{2,}[\S\s]*""".r.matches(subSequence)) {
       return """[^\S\r\n]*""".r.findPrefixMatchOf(subSequence) match {
         case Some(matched) => offset + matched.end
         case None          => offset
@@ -55,14 +63,16 @@ object RequestParser extends RegexParsers {
       case _      => None
     }
 
-  lazy val uri: Parser[URI] =
-    protocol ~ ("://" ~> host) ~ optionalPort ~ path ^^ { parsed =>
-      URI(
-        parsed._1._1._1,
-        parsed._1._1._2,
-        parsed._1._2.getOrElse(80),
-        parsed._2
-      )
+  lazy val uri: Parser[URI | Path] =
+    opt(protocol ~ ("://" ~> host) ~ optionalPort) ~ path ^^ {
+      case None ~ path => path
+      case Some(proto ~ host ~ port) ~ path =>
+        URI(
+          proto,
+          host,
+          port.getOrElse(80),
+          path
+        )
     }
 
   lazy val method: Parser[Method] =
@@ -78,7 +88,7 @@ object RequestParser extends RegexParsers {
 
   lazy val headerKey: Parser[String] = """[a-zA-Z\-]+""".r
 
-  lazy val headerVal: Parser[String] = "\"" ~> """[^"]+""".r <~ "\""
+  lazy val headerVal: Parser[String] = """.+""".r
 
   lazy val requestHeaders: Parser[RequestHeaders] =
     rep((headerKey <~ ":") ~ headerVal) ^^ { a =>
@@ -87,26 +97,43 @@ object RequestParser extends RegexParsers {
       }.toMap
     }
 
+  lazy val version: Parser[Version] = """HTTP/1\.1""".r ^^ { _ =>
+    Version.Http1_1
+  }
+
   lazy val header: Parser[Header] =
-    method ~ uri ~ requestHeaders ^^ { case method ~ url ~ rqHs =>
-      Header(method, url, rqHs)
+    method ~ uri ~ version ~ requestHeaders ^^ { case method ~ url ~ v ~ rqHs =>
+      Header(method, url, v, rqHs)
     }
 
   lazy val bodySep: Parser[String] = """[^\S\r\n]*\n{2,}""".r
 
-  lazy val request: Parser[Request] = header ~ opt(bodySep ~> """.*""".r) ^^ {
-    r =>
-      Request(r._1, r._2)
-  }
+  lazy val request: Parser[Request] =
+    header ~ opt(bodySep ~> """[\s\S]*""".r) ^^ { case header ~ maybeBody =>
+      Request(header, maybeBody)
+    }
 }
 
-case class Request(val header: Header, body: Option[String])
+case class Request(header: Header, body: Option[String])
 
 object Main extends App {
   println(
     RequestParser.parseAll(
       RequestParser.request,
-      "   POST http://localhost:8080/foo/bar Accept: \"text/plain\" \nUser-Agent: \"PostmanRuntime/7.29.2\" \n\nbody body".stripMargin
+      """POST /foo/bar HTTP/1.1
+        |Accept: text/plain
+        |User-Agent: PostmanRuntime/7.29.2
+        |
+        |
+        |
+        |body body
+        |ssd
+        |f
+        |sdfjhsdkjf
+        |
+        |
+        |sdfjhs dfkujh
+        |""".stripMargin
     )
   )
 }
