@@ -32,7 +32,9 @@ object RequestParser extends RegexParsers {
   ): Int = {
     val subSequence = source.subSequence(offset, source.length())
 
-    if ("""[^\S\r\n]*\n{2,}[\S\s]*""".r.matches(subSequence)) {
+    if (
+      """[^\S\r\n]*(\n{2,}|\r{2,}|(\r\n){2,})[\S\s]*""".r.matches(subSequence)
+    ) {
       return """[^\S\r\n]*""".r.findPrefixMatchOf(subSequence) match {
         case Some(matched) => offset + matched.end
         case None          => offset
@@ -106,7 +108,8 @@ object RequestParser extends RegexParsers {
       Header(method, url, v, rqHs)
     }
 
-  lazy val bodySep: Parser[String] = """[^\S\r\n]*\n{2,}""".r
+  lazy val bodySep: Parser[String] =
+    """[^\S\r\n]*(\n{2,}|\r{2,}|(\r\n){2,})""".r
 
   lazy val request: Parser[Request] =
     header ~ opt(bodySep ~> """[\s\S]*""".r) ^^ { case header ~ maybeBody =>
@@ -120,19 +123,19 @@ object Main extends App {
   println(
     RequestParser.parseAll(
       RequestParser.request,
-      """POST /foo/bar HTTP/1.1
-        |Accept: text/plain
+      """POST / HTTP/1.1
+        |Content-Type: application/json
         |User-Agent: PostmanRuntime/7.29.2
+        |Accept: */*
+        |Postman-Token: a76d734e-f6ab-4e3c-8c46-7bf761565f5c
+        |Host: localhost:3333
+        |Accept-Encoding: gzip, deflate, br
+        |Connection: keep-alive
+        |Content-Length: 30
         |
         |
+        |"Lorem ipsum dol\nor si tamet"
         |
-        |body body
-        |ssd
-        |f
-        |sdfjhsdkjf
-        |
-        |
-        |sdfjhs dfkujh
         |""".stripMargin
     )
   )
