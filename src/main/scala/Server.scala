@@ -1,9 +1,9 @@
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.io.IO
 
 import java.net.InetSocketAddress
 
-class Server extends Actor {
+class Server(using rqHandler: Handler) extends Actor {
 
   import akka.io.Tcp._
   import context.system
@@ -17,9 +17,12 @@ class Server extends Actor {
     case CommandFailed(_: Bind) => context.stop(self)
 
     case Connected(remote, local) =>
-      val handler = context.actorOf(Props[TCPSocketHandler]())
+      println("connected")
+      val handler = createHandler
       val connection = sender()
       connection ! Register(handler)
   }
 
+  def createHandler: ActorRef =
+    context.actorOf(Props(classOf[TCPSocketHandler], rqHandler))
 }

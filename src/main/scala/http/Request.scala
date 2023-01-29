@@ -8,6 +8,9 @@ enum Method:
 enum Version:
   case Http1_1
 
+  override def toString: _root_.java.lang.String = this match
+    case Version.Http1_1 => "HTTP/1.1"
+
 enum Protocol:
   case Http
 

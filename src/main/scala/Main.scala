@@ -5,6 +5,10 @@ import akka.io.{IO, Udp, UdpConnected}
 import java.net.InetSocketAddress
 
 object Main extends App {
-  val system = ActorSystem.create("system");
-  system.actorOf(Props(classOf[Server]), "tcp-listener")
+  val system = ActorSystem.create("system")
+
+  val rqHandler = HTTPHandler()
+  given Handler = rqHandler
+
+  system.actorOf(Props(classOf[Server], rqHandler), "tcp-listener")
 }
