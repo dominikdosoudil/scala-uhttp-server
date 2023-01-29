@@ -1,9 +1,9 @@
 package uhttp
 
-import uhttp.http.{Request, Response}
+import uhttp.http.{Request, Response, Method}
 
 trait Endpoint {
   val prefix: String = ""
 
-  val routes: Map[String, Request => Response]
+  val routes: Map[(Method, String), Request => Response]
 }
