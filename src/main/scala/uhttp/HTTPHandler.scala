@@ -27,7 +27,7 @@ class HTTPHandler extends Handler {
   }
 }
 object HTTPHandler {
-  val endpoints: List[Endpoint] = List(Echo, Lorem)
+  val endpoints: List[Endpoint] = List(Echo, Lorem, Chat)
 
   lazy val flatEndpoints: List[((Method, String), Request => Response)] =
     endpoints.flatMap(endpoint =>

@@ -120,7 +120,10 @@ object RequestParser extends RegexParsers {
     }
 }
 
-case class Request(header: Header, body: Option[String])
+case class Request(header: Header, body: Option[String]) {
+  def headerVal(headerKey: String): Option[String] =
+    header.headers.get(headerKey)
+}
 
 object Main extends App {
   println(
