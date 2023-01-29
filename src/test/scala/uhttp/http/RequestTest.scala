@@ -1,4 +1,4 @@
-package http
+package uhttp.http
 
 import org.scalatest.flatspec.AnyFlatSpec
 

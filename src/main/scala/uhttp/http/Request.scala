@@ -1,4 +1,4 @@
-package http
+package uhttp.http
 
 import scala.util.parsing.combinator.*
 
@@ -46,7 +46,7 @@ object RequestParser extends RegexParsers {
     super.handleWhiteSpace(source, offset)
   }
   lazy val protocol: Parser[Protocol] =
-    """^http""".r ^^ { case "http" =>
+    """^uhttp.http""".r ^^ { case "http" =>
       Protocol.Http
     }
 

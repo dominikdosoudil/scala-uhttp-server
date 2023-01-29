@@ -1,12 +1,14 @@
+package uhttp
+
 import akka.actor.{Actor, ActorRef}
 import akka.io.Udp
 import akka.util.ByteString
-import http.{RequestParser, Response}
+import uhttp.http.{RequestParser, Response}
 
 import java.net.InetSocketAddress
 
 class TCPSocketHandler(rqHandler: Handler) extends Actor {
-  import akka.io.Tcp._
+  import akka.io.Tcp.*
 
   def receive: Receive = {
     case Received(data) => {

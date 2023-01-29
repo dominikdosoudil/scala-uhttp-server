@@ -1,3 +1,5 @@
+package uhttp
+
 import akka.actor.{Actor, ActorRef, Props}
 import akka.io.IO
 
@@ -5,7 +7,7 @@ import java.net.InetSocketAddress
 
 class Server(using rqHandler: Handler) extends Actor {
 
-  import akka.io.Tcp._
+  import akka.io.Tcp.*
   import context.system
 
   IO(akka.io.Tcp) ! Bind(self, new InetSocketAddress("localhost", 3333))

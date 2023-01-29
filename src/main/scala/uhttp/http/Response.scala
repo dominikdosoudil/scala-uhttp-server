@@ -1,11 +1,11 @@
-package http
+package uhttp.http
 
 import scala.compiletime.ops.any.ToString
 
 enum Status(val value: Int, val name: String):
   case Ok extends Status(200, "OK")
   case NotFound extends Status(404, "Not Found")
-  case InternalError extends Status(500, "Internal Server Error")
+  case InternalError extends Status(500, "Internal uhttp.Server Error")
 
 case class Response(val status: Status, body: String) {
   override def toString: _root_.java.lang.String = {

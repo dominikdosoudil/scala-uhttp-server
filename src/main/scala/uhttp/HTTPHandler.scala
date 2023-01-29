@@ -1,4 +1,6 @@
-import http.{Request, Response, Status}
+package uhttp
+
+import uhttp.http.{Request, Response, Status}
 
 class HTTPHandler extends Handler {
   override def handle(rq: Request): Response = {
